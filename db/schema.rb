@@ -10,15 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_05_20_142655) do
+ActiveRecord::Schema.define(version: 2020_05_23_123016) do
 
   create_table "tickets", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "ticket_name"
     t.integer "user_id"
-    t.integer "give_user_id"
-    t.integer "give_flg"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "give_flg"
+    t.integer "give_user_id"
     t.integer "original_ticket_id"
   end
 

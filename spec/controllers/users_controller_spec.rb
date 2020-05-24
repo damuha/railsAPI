@@ -42,36 +42,56 @@ RSpec.describe UsersController, type: :controller do
   let(:valid_session) { {} }
 
   describe "GET #index" do
-    it "returns a success response" do
-      user = User.create! valid_attributes
-      get :index, params: {}, session: valid_session
-      expect(response).to be_successful
+    before do
+      @user = FactoryBot.create_list(:users, 3)
     end
+    it "リクエスト成功　200" do
+      get :index, params: {}, session: valid_session
+      expect(response.status).to eq(200)
+    end
+    it "tickets情報取得成功" do
+      get :index, params: {}, session: valid_session
+      expect(assigns (:tickets)).to eq @tickets
+    end
+
   end
 
   describe "GET #show" do
-    it "returns a success response" do
-      user = User.create! valid_attributes
-      get :show, params: {id: user.to_param}, session: valid_session
-      expect(response).to be_successful
-    end
+    let(:users) { FactoryBot.create :users }
+    let(:tickets) { FactoryBot.create(:tickets, user_id: users.user_id) }
+
+      it "リクエスト成功　200" do
+        get :show, params: {id: users.user_id}, session: valid_session
+        expect(response.status).to eq(200)
+      end
+      it "user情報取得成功" do
+        get :show, params: { id: users.user_id}, session: valid_session
+        expect(assigns :user).to eq users
+      end
   end
 
   describe "POST #create" do
-    context "with valid params" do
-      it "creates a new User" do
-        expect {
-          post :create, params: {user: valid_attributes}, session: valid_session
-        }.to change(User, :count).by(1)
-      end
+    before do
+      @user = FactoryBot.attributes_for(:users_create)
+    end
+    it "リクエスト成功　201" do
+        post :create, params: { user: @user }
+        expect(response.status).to eq(201)
+    end
 
-      it "renders a JSON response with the new user" do
+    it "ユーザーが登録成功" do
+      expect do
+        post :create, params: { user: @user }
+        expect(response.status).to eq(201)
+      end.to change(User, :count).by(1)
+    end
 
-        post :create, params: {user: valid_attributes}, session: valid_session
-        expect(response).to have_http_status(:created)
-        expect(response.content_type).to eq('application/json')
-        expect(response.location).to eq(user_url(User.last))
-      end
+    it "renders a JSON response with the new user" do
+
+      post :create, params: {user: valid_attributes}, session: valid_session
+      expect(response).to have_http_status(:created)
+      expect(response.content_type).to eq('application/json')
+      expect(response.location).to eq(user_url(User.last))
     end
 
     context "with invalid params" do

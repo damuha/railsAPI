@@ -3,14 +3,7 @@ class UsersController < ApplicationController
 
   # GET /users
   def index
-    @users = User.joins(:tickets)
-    .select("
-      id AS ticket_id, 
-      ticket_name, 
-      users.user_id,
-      user_name, 
-      give_user_id
-      ")
+    @users = User.all
 
 
     render json: @users
@@ -24,11 +17,11 @@ class UsersController < ApplicationController
       ticket_name, 
       users.user_id,
       user_name, 
-      give_user_id
+      give_user_id,
+      give_flg,
+      original_ticket_id
       ")
-      .where(
-        user_id: params[:id]
-      )
+
 
     render json: { status: 'SUCCESS', message: 'Loaded the post', data: @user }
   end

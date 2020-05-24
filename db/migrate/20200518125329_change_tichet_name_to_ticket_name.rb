@@ -1,5 +1,8 @@
 class ChangeTichetNameToTicketName < ActiveRecord::Migration[6.0]
   def change
-    rename_column :tickets, :tichet_name, :ticket_name
+    create_table :tickets do |t|
+      t.string :ticket_name
+      t.timestamps
+    end
   end
 end

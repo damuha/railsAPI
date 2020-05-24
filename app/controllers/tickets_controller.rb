@@ -3,26 +3,19 @@ class TicketsController < ApplicationController
 
   # GET /tickets
   def index
-    # tickets = Ticket.find_by(give_flg: 1)
-    #   tickets.each do |ticket|
-    #     tickets.give_flg = '2'
-    #     tickets.save
-    #     give_ticket = Ticket.new(ticket_name:ticket.ticket_name, user_id: ticket.give_user_id)
-    #     give_ticket.save
-    #   end
-    
     @tickets = Ticket.all
     render json: @tickets
   end
 
   # GET /tickets/1
   def show
-    if @ticket.give_flg == 1
-        @ticket.give_flg = '2'
-        @ticket.save
-        Ticket.create(ticket_name: @ticket.ticket_name, user_id: @ticket.give_user_id, give_flg:3, original_ticket_id: @ticket.id)
-    end
-    
+    @ticket = Ticket.where(
+      id: params[:id]
+    ).or(
+      Ticket.where(
+        original_ticket_id: params[:id]
+      ))
+   
     render json: @ticket
   end
 
@@ -41,8 +34,17 @@ class TicketsController < ApplicationController
   def update
     if @ticket.update(ticket_params)
       if @ticket.give_flg == 1
-        show
+        @ticket.give_flg = '2'
+        @ticket.save
+        Ticket.create(ticket_name: @ticket.ticket_name, user_id: @ticket.give_user_id, give_flg:3, original_ticket_id: @ticket.id)
       end
+      @ticket = Ticket.where(
+          id: params[:id]
+        ).or(
+          Ticket.where(
+            original_ticket_id: params[:id]
+          ))
+        
       render json: @ticket
     else
       render json: @ticket.errors, status: :unprocessable_entity
@@ -62,8 +64,6 @@ class TicketsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def ticket_params
-      params.fetch(:tickets, {})
-      params.fetch(:tickets, {}).permit(:ticket_name)
-      params.fetch(:tickets, {}).permit(:user_id)
+      params.fetch(:tickets, {}).permit(:ticket_name, :user_id, :give_flg, :give_user_id, :original_ticket_id)
     end
 end

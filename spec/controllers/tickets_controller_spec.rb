@@ -42,27 +42,47 @@ RSpec.describe TicketsController, type: :controller do
   let(:valid_session) { {} }
 
   describe "GET #index" do
-    it "returns a success response" do
-      ticket = Ticket.create! valid_attributes
+    before do
+      @ticket = FactoryBot.create_list(:tickets, 3)
+    end
+    it "リクエスト成功　200" do
       get :index, params: {}, session: valid_session
-      expect(response).to be_successful
+      expect(response.status).to eq(200)
+    end
+    it "users情報取得成功" do
+      get :index, params: {}, session: valid_session
+      expect(assigns (:users)).to eq @user
     end
   end
 
   describe "GET #show" do
-    it "returns a success response" do
-      ticket = Ticket.create! valid_attributes
-      get :show, params: {id: ticket.to_param}, session: valid_session
-      expect(response).to be_successful
+    before do
+      @ticket = FactoryBot.create(:tickets)
+    end
+    it "リクエスト成功　200" do
+      get :show, params: {id: @ticket.id}, session: valid_session
+      expect(response.status).to eq(200)
+    end
+    it "ticket情報取得成功" do
+      get :show, params: { id: @ticket.id}, session: valid_session
+      expect(assigns :ticket).to eq @ticket
     end
   end
 
   describe "POST #create" do
-    context "with valid params" do
-      it "creates a new Ticket" do
-        expect {
-          post :create, params: {ticket: valid_attributes}, session: valid_session
-        }.to change(Ticket, :count).by(1)
+      before do
+        @ticket = FactoryBot.attributes_for(:tickets)
+      end
+      it "リクエスト成功　201" do
+          post :create, params: { ticket: @ticket }
+          expect(response.status).to eq(201)
+      end
+  
+      it "ユーザーが登録成功" do
+        expect do
+          post :create, params: { ticket: @ticket }
+          expect(response.status).to eq(201)
+        end.to change(Ticket, :count).by(1)
       end
 
       it "renders a JSON response with the new ticket" do
@@ -72,7 +92,6 @@ RSpec.describe TicketsController, type: :controller do
         expect(response.content_type).to eq('application/json')
         expect(response.location).to eq(ticket_url(Ticket.last))
       end
-    end
 
     context "with invalid params" do
       it "renders a JSON response with errors for the new ticket" do
@@ -89,6 +108,20 @@ RSpec.describe TicketsController, type: :controller do
       let(:new_attributes) {
         skip("Add a hash of attributes valid for your model")
       }
+      let(:users) { FactoryBot.create :users }
+      let(:ticket_update_before) { FactoryBot.create(:tickets, user_id: users.user_id) }
+      let(:ticket_update_after) { FactoryBot.create(:tickets) }
+
+      it "リクエスト成功　200" do
+          put :update, params: { id: ticket_update_before, tickets: FactoryBot.attributes_for(:ticket_update_after)}, session: valid_session
+          expect(response.status).to eq(200)
+      end
+
+      it "値更新成功" do
+        expect do
+          put :update, params: { id: ticket_update_before, tickets: FactoryBot.attributes_for(:ticket_update_after)}, session: valid_session
+        end.to change {Ticket.find(ticket_update_before.id).give_flg}.from(0).to(2)
+      end
 
       it "updates the requested ticket" do
         ticket = Ticket.create! valid_attributes
